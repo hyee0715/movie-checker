@@ -12,4 +12,7 @@ public interface MovieCheckFeignClient {
 
     @GetMapping(value = "/findTheaCdList.do")
     String getTheaCdList(@RequestParam("sWideareaCd") String sWideareaCd, @RequestParam("sBasareaCd") String sBasareaCd);
+
+    @GetMapping(value = "/findSchedule.do")
+    String getSchedule(@RequestParam("theaCd") String theaCd, @RequestParam("showDt") String showDt);
 }
