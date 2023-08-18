@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,30 @@ public class MovieCheckService {
     public List<Schedule> getSchedule(String theaCd, String showDt) throws JsonProcessingException {
         String content = movieCheckFeignClient.getSchedule(theaCd, showDt);
 
-        return convertScheduleJsonData(content);
+        List<Schedule> schedules = convertScheduleJsonData(content);
+
+        for (Schedule schedule : schedules) {
+            String showTm = schedule.getShowTm();
+            List<ScheduleTime> scheduleTimes = extractScheduleTime(showTm);
+            schedule.setScheduleTimes(scheduleTimes);
+        }
+
+        return schedules;
+    }
+
+    public List<ScheduleTime> extractScheduleTime(String showTm) {
+        List<ScheduleTime> ret = new ArrayList<>();
+        String[] showtimes = showTm.split(",");
+
+        for (String showtime : showtimes) {
+            String hour = showtime.substring(0, 2);
+            String minute = showtime.substring(2, 4);
+
+            ScheduleTime scheduleTime = new ScheduleTime(Integer.parseInt(hour), Integer.parseInt(minute));
+            ret.add(scheduleTime);
+        }
+
+        return ret;
     }
 
     public static List<AreaInformation> convertAreaInformationJsonData(String jsonString, Class<?> dtoClass) throws JsonProcessingException {
