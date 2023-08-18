@@ -81,5 +81,33 @@ public class MovieCheckService {
 
         return scheduleDto.getSchedule();
     }
+
+    public List<Schedule> getCorrectTimeSchedules(List<Schedule> schedules, String time) {
+        List<Schedule> ret = new ArrayList<>();
+
+        int hour = Integer.parseInt(time.substring(0, 2));
+        int minute = Integer.parseInt(time.substring(2, 4));
+
+        int[] wantTime = {hour, minute};
+
+        for (Schedule schedule : schedules) {
+            List<ScheduleTime> scheduleTimes = schedule.getScheduleTimes();
+
+            boolean selectSchedule = false;
+
+            for (ScheduleTime scheduleTime : scheduleTimes) {
+                if (scheduleTime.getHour() == wantTime[0] || scheduleTime.getHour() - 1 == wantTime[0] || scheduleTime.getHour() + 1 == wantTime[0]) {
+                    selectSchedule = true;
+                    break;
+                }
+            }
+
+            if (selectSchedule) {
+                ret.add(schedule);
+            }
+        }
+
+        return ret;
+    }
 }
 
