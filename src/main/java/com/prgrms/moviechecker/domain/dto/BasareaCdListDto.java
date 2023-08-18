@@ -1,5 +1,6 @@
-package com.prgrms.moviechecker.domain;
+package com.prgrms.moviechecker.domain.dto;
 
+import com.prgrms.moviechecker.domain.AreaInformation;
 import lombok.Getter;
 import lombok.Setter;
 

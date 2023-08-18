@@ -1,5 +1,7 @@
-package com.prgrms.moviechecker.domain;
+package com.prgrms.moviechecker.domain.dto;
 
+import com.prgrms.moviechecker.domain.HomepgUrl;
+import com.prgrms.moviechecker.domain.Schedule;
 import lombok.Getter;
 import lombok.Setter;
 
