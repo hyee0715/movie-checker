@@ -8,4 +8,9 @@ import lombok.Getter;
 public class ScheduleTime {
     int hour;
     int minute;
+
+    @Override
+    public String toString() {
+        return hour + "시 " + minute + "분";
+    }
 }
