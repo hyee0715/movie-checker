@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -34,6 +35,7 @@ public class TelegramService extends TelegramLongPollingBot {
     private String basarea;
     private String thea;
     private String schedule;
+    private String theaterName;
 
     @Override
     public String getBotUsername() {
@@ -66,7 +68,7 @@ public class TelegramService extends TelegramLongPollingBot {
 
                     proceedBasareaCd(basareaCdList, chatId);
 
-                } else if (data.length() == 9){
+                } else if (data.length() == 9) {
                     basarea = data;
 
                     List<AreaInformation> theaCdList = movieCheckService.getTheaCdList(region, basarea);
@@ -79,6 +81,13 @@ public class TelegramService extends TelegramLongPollingBot {
                 } else if (data.length() == 6) {
                     thea = data;
 
+                    List<AreaInformation> theaCdList = movieCheckService.getTheaCdList(region, basarea);
+
+                    theaterName = theaCdList.stream().filter(x -> Objects.equals(x.getCd(), thea))
+                            .findAny()
+                            .map(AreaInformation::getCdNm)
+                            .orElseThrow(RuntimeException::new);
+
                     getWantedDate();
                 } else if (data.length() == 8) {
                     log.info("date = {}", data);
@@ -90,8 +99,11 @@ public class TelegramService extends TelegramLongPollingBot {
                         log.info("getMovieCd = {}", a.getMovieCd());
                         log.info("getMovieNm = {}", a.getMovieNm());
                         log.info("getScheduleTimes = {}", a.getScheduleTimes());
+                        log.info("getShowTm = {}", a.getShowTm());
                         log.info("--------------------------");
                     }
+
+                    printSchedule(schedules);
                 }
             } else {
                 handleCommands(update);
@@ -225,7 +237,7 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void getWantedDate() {
-        SendMessage message = SendMessage.builder().chatId(chatId).text("조회를 원하시는 날짜를 선택해주세요.").build();
+        SendMessage message = SendMessage.builder().chatId(chatId).text(theaterName + "을(를) 선택하셨습니다.\n조회를 원하시는 날짜를 선택해주세요.").build();
 
         String[] days = {"일", "월", "화", "수", "목", "금", "토"};
 
@@ -269,6 +281,30 @@ public class TelegramService extends TelegramLongPollingBot {
             markupInline.setKeyboard(rowsInline);
         }
         message.setReplyMarkup(markupInline);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printSchedule(List<Schedule> schedules) {
+        StringBuilder messageText = new StringBuilder(theaterName + "의 " + schedule + " 일정입니다.\n---------------------------------------------------------------\n\n");
+
+        for (int i = 0; i < schedules.size(); i++) {
+            StringBuilder scheduleInfo = new StringBuilder("상영관 번호: " + schedules.get(i).getScrnNm() +
+                    "\n영화 제목: " + schedules.get(i).getMovieNm() +
+                    "\n상영 시작 시간: " + schedules.get(i).getScheduleTimes());
+
+            if (i != schedules.size() - 1) {
+                scheduleInfo.append("\n\n---------------------------------------------------------------\n\n");
+            }
+
+            messageText.append(scheduleInfo.toString());
+
+        }
+        SendMessage message = SendMessage.builder().chatId(chatId).text(messageText.toString()).build();
 
         try {
             execute(message);
